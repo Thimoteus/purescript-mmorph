@@ -17,11 +17,10 @@
   },
   "license": "MIT",
   "dependencies": {
-    "purescript-transformers": "^1.0.0",
-    "purescript-functor-compose": "^0.1.0",
-    "purescript-functor-products": "^1.0.0"
+    "purescript-transformers": "^2.0.1",
+    "purescript-functors": "^1.0.0"
   },
   "devDependencies": {
-    "purescript-console": "^1.0.0"
+    "purescript-console": "^2.0.0"
   }
 }

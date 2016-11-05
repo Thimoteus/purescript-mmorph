@@ -9,12 +9,13 @@ import Control.Monad.Maybe.Trans as M
 import Control.Monad.Reader.Trans as R
 import Control.Monad.RWS.Trans as RWS
 import Control.Monad.State.Trans as S
-import Control.Monad.Trans (class MonadTrans)
+import Control.Monad.Trans.Class (class MonadTrans)
 import Control.Monad.Writer.Trans as W
 import Data.Either (Either(..))
 import Data.Functor.Compose (Compose(..))
 import Data.Functor.Product (Product(..))
-import Data.Identity (runIdentity, Identity)
+import Data.Identity (Identity)
+import Data.Newtype (unwrap)
 import Data.Maybe (Maybe(..))
 import Data.Monoid (class Monoid)
 import Data.Tuple (Tuple(..))
@@ -47,7 +48,7 @@ instance mfunctorProduct :: MFunctor (Product f) where
   hoist nat (Product (Tuple f g)) = Product (Tuple f (nat g))
 
 generalize :: forall m a. Monad m => Identity a -> m a
-generalize = pure <<< runIdentity
+generalize = pure <<< unwrap
 
 class (MFunctor t, MonadTrans t) <= MMonad t where
   embed :: forall n m b. Monad n => (forall a. m a -> t n a) -> t m b -> t n b
