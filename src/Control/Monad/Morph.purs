@@ -53,7 +53,7 @@ generalize = pure <<< unwrap
 class (MFunctor t, MonadTrans t) <= MMonad t where
   embed :: forall n m b. Monad n => (forall a. m a -> t n a) -> t m b -> t n b
 
-squash :: forall m t. (Monad m, MMonad t) => t (t m) ~> t m
+squash :: forall m t. Monad m => MMonad t => t (t m) ~> t m
 squash = embed id
 
 infixr 2 composeKleisliRight as >|>
@@ -64,7 +64,8 @@ infixl 2 flipEmbed as |>=
 
 composeKleisliRight
   :: forall m1 m2 m3 t
-   . (MMonad t, Monad m3)
+   . MMonad t
+  => Monad m3
   => m1 ~> t m2
   -> m2 ~> t m3
   -> m1 ~> t m3
@@ -72,7 +73,8 @@ composeKleisliRight f g m = embed g (f m)
 
 composeKleisliLeft
   :: forall m1 m2 m3 t
-   . (MMonad t, Monad m3)
+   . MMonad t
+  => Monad m3
   => m2 ~> t m3
   -> m1 ~> t m2
   -> m1 ~> t m3
@@ -80,7 +82,8 @@ composeKleisliLeft g f m = embed g (f m)
 
 flipEmbed
   :: forall t m n a
-   . (MMonad t, Monad n)
+   . MMonad t
+  => Monad n
   => t m a
   -> m ~> t n
   -> t n a
