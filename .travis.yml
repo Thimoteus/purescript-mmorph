@@ -4,7 +4,7 @@ sudo: required
 node_js:
   - stable
 install:
-  - npm install purescript@^0.11.1 pulp@^0.11.0 bower -g
+  - npm install purescript@^0.11.1 pulp@^11.0.0 bower -g
   - bower install
 script:
   - pulp build && pulp test
