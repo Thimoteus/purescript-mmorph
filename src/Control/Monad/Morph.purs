@@ -9,12 +9,13 @@ import Control.Monad.Maybe.Trans as M
 import Control.Monad.Reader.Trans as R
 import Control.Monad.RWS.Trans as RWS
 import Control.Monad.State.Trans as S
-import Control.Monad.Trans (class MonadTrans)
+import Control.Monad.Trans.Class (class MonadTrans)
 import Control.Monad.Writer.Trans as W
 import Data.Either (Either(..))
 import Data.Functor.Compose (Compose(..))
 import Data.Functor.Product (Product(..))
-import Data.Identity (runIdentity, Identity)
+import Data.Identity (Identity)
+import Data.Newtype (unwrap)
 import Data.Maybe (Maybe(..))
 import Data.Monoid (class Monoid)
 import Data.Tuple (Tuple(..))
@@ -47,12 +48,12 @@ instance mfunctorProduct :: MFunctor (Product f) where
   hoist nat (Product (Tuple f g)) = Product (Tuple f (nat g))
 
 generalize :: forall m a. Monad m => Identity a -> m a
-generalize = pure <<< runIdentity
+generalize = pure <<< unwrap
 
 class (MFunctor t, MonadTrans t) <= MMonad t where
   embed :: forall n m b. Monad n => (forall a. m a -> t n a) -> t m b -> t n b
 
-squash :: forall m t. (Monad m, MMonad t) => t (t m) ~> t m
+squash :: forall m t. Monad m => MMonad t => t (t m) ~> t m
 squash = embed id
 
 infixr 2 composeKleisliRight as >|>
@@ -63,7 +64,8 @@ infixl 2 flipEmbed as |>=
 
 composeKleisliRight
   :: forall m1 m2 m3 t
-   . (MMonad t, Monad m3)
+   . MMonad t
+  => Monad m3
   => m1 ~> t m2
   -> m2 ~> t m3
   -> m1 ~> t m3
@@ -71,7 +73,8 @@ composeKleisliRight f g m = embed g (f m)
 
 composeKleisliLeft
   :: forall m1 m2 m3 t
-   . (MMonad t, Monad m3)
+   . MMonad t
+  => Monad m3
   => m2 ~> t m3
   -> m1 ~> t m2
   -> m1 ~> t m3
@@ -79,7 +82,8 @@ composeKleisliLeft g f m = embed g (f m)
 
 flipEmbed
   :: forall t m n a
-   . (MMonad t, Monad n)
+   . MMonad t
+  => Monad n
   => t m a
   -> m ~> t n
   -> t n a
