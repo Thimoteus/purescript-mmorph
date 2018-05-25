@@ -11,7 +11,7 @@ import Data.Unfoldable (replicateA)
 import Effect (Effect)
 import Effect.Console (log)
 
-tick :: StateT Int Identity Unit
+tick :: StateT Int Identity Int
 tick = modify (_ +1)
 
 type MyEnv = WriterT (Array Int) Identity
@@ -24,7 +24,7 @@ save = do
 
 tock :: StateT Int Effect Unit
 tock = do
-  hoist generalize tick
+  _ <- hoist generalize tick
   lift $ log "Tock!"
 
 program :: StateT Int (WriterT (Array Int) Effect) (Array Unit)
