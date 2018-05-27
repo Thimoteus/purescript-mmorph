@@ -17,7 +17,6 @@ import Data.Functor.Product (Product(..))
 import Data.Identity (Identity)
 import Data.Newtype (unwrap)
 import Data.Maybe (Maybe(..))
-import Data.Monoid (class Monoid)
 import Data.Tuple (Tuple(..))
 
 class MFunctor t where
@@ -54,7 +53,7 @@ class (MFunctor t, MonadTrans t) <= MMonad t where
   embed :: forall n m b. Monad n => (forall a. m a -> t n a) -> t m b -> t n b
 
 squash :: forall m t. Monad m => MMonad t => t (t m) ~> t m
-squash = embed id
+squash = embed identity
 
 infixr 2 composeKleisliRight as >|>
 infixl 2 composeKleisliLeft as <|<

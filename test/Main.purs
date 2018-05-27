@@ -2,15 +2,16 @@
 module Test.Main where
 
 import Prelude
-import Control.Monad.Eff (Eff)
-import Control.Monad.Eff.Console (CONSOLE, log)
+
 import Control.Monad.Morph (generalize, hoist)
 import Control.Monad.State.Trans (StateT, runStateT, get, modify)
 import Control.Monad.Writer.Trans (WriterT, execWriterT, lift, tell)
 import Data.Identity (Identity)
 import Data.Unfoldable (replicateA)
+import Effect (Effect)
+import Effect.Console (log)
 
-tick :: StateT Int Identity Unit
+tick :: StateT Int Identity Int
 tick = modify (_ +1)
 
 type MyEnv = WriterT (Array Int) Identity
@@ -21,15 +22,15 @@ save = do
   n <- get
   lift $ tell [n :: Int]
 
-tock :: forall eff. StateT Int (Eff (console :: CONSOLE | eff)) Unit
+tock :: StateT Int Effect Unit
 tock = do
-  hoist generalize tick
+  _ <- hoist generalize tick
   lift $ log "Tock!"
 
-program :: forall eff. StateT Int (WriterT (Array Int) (Eff (console :: CONSOLE | eff))) (Array Unit)
+program :: StateT Int (WriterT (Array Int) Effect) (Array Unit)
 program = replicateA 4 $ do
   hoist lift tock
   hoist (hoist generalize) save
 
-main :: forall eff. Eff (console :: CONSOLE | eff) (Array Int)
+main :: Effect (Array Int)
 main = execWriterT (runStateT (void program) 0)
