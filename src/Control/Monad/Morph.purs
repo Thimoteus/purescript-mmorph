@@ -3,21 +3,28 @@ module Control.Monad.Morph where
 
 import Prelude
 
+import Control.Comonad.Cofree (Cofree, hoistCofree)
+import Control.Comonad.Env.Trans as Env
+import Control.Comonad.Store as Store
+import Control.Comonad.Traced as T
 import Control.Monad.Except.Trans as E
-
+import Control.Monad.Free (Free, foldFree, hoistFree)
 import Control.Monad.Maybe.Trans as M
-import Control.Monad.Reader.Trans as R
 import Control.Monad.RWS.Trans as RWS
+import Control.Monad.Reader.Trans as R
 import Control.Monad.State.Trans as S
 import Control.Monad.Trans.Class (class MonadTrans)
 import Control.Monad.Writer.Trans as W
+import Data.Bifunctor (lmap)
+import Data.Coyoneda (Coyoneda, hoistCoyoneda)
 import Data.Either (Either(..))
 import Data.Functor.Compose (Compose(..))
 import Data.Functor.Product (Product(..))
 import Data.Identity (Identity)
-import Data.Newtype (unwrap)
 import Data.Maybe (Maybe(..))
+import Data.Newtype (over, unwrap)
 import Data.Tuple (Tuple(..))
+import Data.Yoneda (Yoneda, hoistYoneda, lowerYoneda)
 
 class MFunctor t where
   hoist :: forall m n. Monad m => m ~> n -> t m ~> t n
@@ -45,6 +52,27 @@ instance mfunctorCompose :: (Functor f) => MFunctor (Compose f) where
 
 instance mfunctorProduct :: MFunctor (Product f) where
   hoist nat (Product (Tuple f g)) = Product (Tuple f (nat g))
+
+instance mfunctorYoneda :: MFunctor Yoneda where
+  hoist = hoistYoneda
+
+instance mfunctorCoyoneda :: MFunctor Coyoneda where
+  hoist = hoistCoyoneda
+
+instance mfunctorFree :: MFunctor Free where
+  hoist = hoistFree
+
+instance mfunctorCofree :: MFunctor Cofree where
+  hoist = hoistCofree
+
+instance mfunctorEnvT :: MFunctor (Env.EnvT e) where
+  hoist nat = over Env.EnvT (map nat)
+
+instance mfunctorTracedT :: MFunctor (T.TracedT t) where
+  hoist nat = over T.TracedT nat
+
+instance mfunctorStoreT :: MFunctor (Store.StoreT s) where
+  hoist nat = over Store.StoreT (lmap nat)
 
 generalize :: forall m a. Monad m => Identity a -> m a
 generalize = pure <<< unwrap
@@ -111,3 +139,9 @@ instance mmonadWriterT :: (Monoid w) => MMonad (W.WriterT w) where
   embed f m = W.WriterT do
     Tuple (Tuple a w1) w2 <- W.runWriterT (f (W.runWriterT m))
     pure (Tuple a (append w1 w2))
+
+instance mmonadFree :: MMonad Free where
+  embed = foldFree
+
+instance mmonadYoneda :: MMonad Yoneda where
+  embed f = f <$> lowerYoneda
