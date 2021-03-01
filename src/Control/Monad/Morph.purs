@@ -26,7 +26,7 @@ import Data.Newtype (over, unwrap)
 import Data.Tuple (Tuple(..))
 import Data.Yoneda (Yoneda, hoistYoneda, lowerYoneda)
 
-class MFunctor t where
+class MFunctor (t :: (Type -> Type) -> Type -> Type) where
   hoist :: forall m n. Monad m => m ~> n -> t m ~> t n
 
 instance mfunctorExceptT :: MFunctor (E.ExceptT e) where
