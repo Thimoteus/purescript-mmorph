@@ -1,0 +1,21 @@
+name: CI
+
+on:
+  push:
+    branches: main
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: purescript-contrib/setup-purescript@main
+        with:
+          purescript: "unstable"
+
+      - run: |
+          npx bower install
+          npx pulp build
+          npx pulp test
