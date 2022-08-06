@@ -9,6 +9,7 @@ import Control.Comonad.Store as Store
 import Control.Comonad.Traced as T
 import Control.Monad.Except.Trans as E
 import Control.Monad.Free (Free, foldFree, hoistFree)
+import Control.Monad.Identity.Trans as I
 import Control.Monad.Maybe.Trans as M
 import Control.Monad.RWS.Trans as RWS
 import Control.Monad.Reader.Trans as R
@@ -46,6 +47,9 @@ instance mfunctorStateT :: MFunctor (S.StateT s) where
 
 instance mfunctorRWS :: MFunctor (RWS.RWST r w s) where
   hoist nat m = RWS.RWST (\ r s -> nat (RWS.runRWST m r s))
+
+instance mfunctorIdentity :: MFunctor I.IdentityT where
+  hoist nat m = I.IdentityT (nat (I.runIdentityT m))
 
 instance mfunctorCompose :: (Functor f) => MFunctor (Compose f) where
   hoist nat (Compose f) = Compose (map nat f)
